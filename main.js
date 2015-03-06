@@ -9,7 +9,8 @@ var create_cb_promise = function(cb_name) {
 };
 
 var promises = {
-  cfsem_board: create_cb_promise('cfsem_board'),
+  cfsem: create_cb_promise('cfsem_done'),
+  dia: create_cb_promise('dia_done')
 };
 
 RSVP.hash(promises)
@@ -19,30 +20,58 @@ RSVP.hash(promises)
   });
 
 function draw_charts (data) {
-  var people_ids = _.uniq(_.pluck(data.cfsem_board.board_members, "person_id"));
   var people = [];
+  var people_ids = _.uniq(_.pluck(data.cfsem.board_members, "person_id"));
   _.forEach(people_ids, function (person_id) {
-    var boardmember = _.findWhere(data.cfsem_board.board_members, {person_id: person_id.toString()});
+    var boardmember = _.findWhere(data.cfsem.board_members, {person_id: person_id.toString()});
     var name = boardmember.name;
     var person = {
-      id: person_id,
+      id: parseInt(person_id),
+      name: name,
+      t: "person"
+    };
+    people.push(person);
+  });
+  var people_ids = _.uniq(_.pluck(data.dia.board_members, "person_id"));
+  _.forEach(people_ids, function (person_id) {
+    var boardmember = _.findWhere(data.dia.board_members, {person_id: person_id.toString()});
+    var name = boardmember.name;
+    var person = {
+      id: parseInt(person_id),
       name: name,
       t: "person"
     };
     people.push(person);
   });
 
-  var organizations = [{
-    id: 111,
-    name: "Community Foundation",
-    t: "Organization"
-  }];
+  var organizations = [
+    {
+      id: 111,
+      name: "Community Foundation",
+      t: "Organization"
+    },
+    {
+      id: 157,
+      name: "Detroit Institute of Arts",
+      t: "Organization"
+    }
+  ];
 
   var board_terms = [];
-  _.forEach(data.cfsem_board.board_members, function (board_membership) {
+  _.forEach(data.cfsem.board_members, function (board_membership) {
     board_terms.push({
       source: 111,
-      target: board_membership.person_id,
+      target: parseInt(board_membership.person_id),
+      label: board_membership.position,
+      amount: board_membership.compensation,
+      startyear: board_membership.term_start.substr(0,4),
+      endyear: board_membership.term_end.substr(0,4)
+    });
+  });
+  _.forEach(data.dia.board_members, function (board_membership) {
+    board_terms.push({
+      source: 157,
+      target: parseInt(board_membership.person_id),
       label: board_membership.position,
       amount: board_membership.compensation,
       startyear: board_membership.term_start.substr(0,4),
@@ -56,7 +85,7 @@ function draw_charts (data) {
     mLinkNum: {},
   };
 
-  var nodeIds = _.pluck(data.nodes, 'id');
+  var nodeIds = _.pluck(window.data.nodes, 'id');
   window.data.links.forEach(function (l) {
     l.source = nodeIds.indexOf(l.source);
     l.target = nodeIds.indexOf(l.target);
