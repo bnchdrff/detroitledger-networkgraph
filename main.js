@@ -1,13 +1,42 @@
-var protocol = (
-  ("https:" === document.location.protocol)
-  ? "https"
-  : "http"
-);
+// Get JSONP
+var create_cb_promise = function(cb_name) {
+  var promise = new RSVP.Promise(function(resolve, reject) {
+    window[cb_name] = function(data) {
+      resolve(data);
+    };
+  });
+  return promise;
+};
 
-d3.jsonp(protocol + '://chartercomplex-server.herokuapp.com/nodes.json?callback={callback}', function (got_some_nodes) {
-  d3.jsonp(protocol + '://chartercomplex-server.herokuapp.com/edges.json?callback={callback}', function (got_some_edges) {
+var promises = {
+  cfsem_board: create_cb_promise('cfsem_board'),
+};
+
+RSVP.hash(promises)
+  .then(draw_charts)
+  .catch(function(reason) {
+    debugger;
+  });
+
+function draw_charts (data) {
+  var people_ids = _.uniq(_.pluck(data.cfsem_board.board_members, "person_id"));
+  var people = _.map(people_ids, function (person_id) {
+    var person = {
+      id: person_id,
+      name: _.pluck(_.findWhere(data.cfsem_board.board_members, {person_id: person_id}), "name"),
+      t: "person"
+    };
+    //return person;
+  });
+
+  var organizations = [{
+    id: 111,
+    name: "Community Foundation",
+    t: "Organization"
+  }];
+
     window.data = {
-      nodes: got_some_nodes.nodes,
+      nodes: people.concat(organizations),
       links: got_some_edges.edges,
       mLinkNum: {},
     };
@@ -19,9 +48,7 @@ d3.jsonp(protocol + '://chartercomplex-server.herokuapp.com/nodes.json?callback=
     });
 
     doEverything(window.data);
-
-  });
-});
+}
 
 function normalize_cat_name(name) {
   return name.trim().toLowerCase();
