@@ -38,9 +38,21 @@ function draw_charts (data) {
     t: "Organization"
   }];
 
+  var board_terms = [];
+  _.forEach(data.cfsem_board.board_members, function (board_membership) {
+    board_terms.push({
+      source: 111,
+      target: board_membership.person_id,
+      label: board_membership.position,
+      amount: board_membership.compensation,
+      startyear: board_membership.term_start.substr(0,4),
+      endyear: board_membership.term_end.substr(0,4)
+    });
+  });
+
   window.data = {
     nodes: people.concat(organizations),
-    links: got_some_edges.edges,
+    links: board_terms,
     mLinkNum: {},
   };
 
