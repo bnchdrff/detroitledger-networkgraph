@@ -20,13 +20,16 @@ RSVP.hash(promises)
 
 function draw_charts (data) {
   var people_ids = _.uniq(_.pluck(data.cfsem_board.board_members, "person_id"));
-  var people = _.map(people_ids, function (person_id) {
+  var people = [];
+  _.forEach(people_ids, function (person_id) {
+    var boardmember = _.findWhere(data.cfsem_board.board_members, {person_id: person_id.toString()});
+    var name = boardmember.name;
     var person = {
       id: person_id,
-      name: _.pluck(_.findWhere(data.cfsem_board.board_members, {person_id: person_id}), "name"),
+      name: name,
       t: "person"
     };
-    //return person;
+    people.push(person);
   });
 
   var organizations = [{
@@ -35,19 +38,19 @@ function draw_charts (data) {
     t: "Organization"
   }];
 
-    window.data = {
-      nodes: people.concat(organizations),
-      links: got_some_edges.edges,
-      mLinkNum: {},
-    };
+  window.data = {
+    nodes: people.concat(organizations),
+    links: got_some_edges.edges,
+    mLinkNum: {},
+  };
 
-    var nodeIds = _.pluck(data.nodes, 'id');
-    window.data.links.forEach(function (l) {
-      l.source = nodeIds.indexOf(l.source);
-      l.target = nodeIds.indexOf(l.target);
-    });
+  var nodeIds = _.pluck(data.nodes, 'id');
+  window.data.links.forEach(function (l) {
+    l.source = nodeIds.indexOf(l.source);
+    l.target = nodeIds.indexOf(l.target);
+  });
 
-    doEverything(window.data);
+  doEverything(window.data);
 }
 
 function normalize_cat_name(name) {
