@@ -246,7 +246,7 @@ function doEverything(data) {
       .attr("d",  d3.svg.symbol()
         .size(function(d) {
           if (d.t == 'Person') {
-            return 200 * d.neighbors.length;
+            return 2000 * Math.log(d.neighbors.length + .5);
           } else {
             return 600;
           }
@@ -318,6 +318,9 @@ function doEverything(data) {
         d.toggled = false;
         return colorStr;
       })
+      .classed("org", function(d) {
+        return (d.t == 'Organization');
+      })
       .on("mouseover", mouseover)
       .on("mouseout", mouseout)
       .on("click", toggle_node);
@@ -326,6 +329,9 @@ function doEverything(data) {
       .style("fill", "black")
       .attr("x", 12)
       .attr("dy", ".35em")
+      .classed("org", function(d) {
+        return (d.t == 'Organization');
+      })
       .text(function (d) {
         return d.name;
       });
@@ -550,6 +556,7 @@ function get_all_start_years(links) {
  */
 function build_year_filter_widget(container_selector, year_opts) {
   d3.select(container_selector)
+    .html('')
     .selectAll('div')
     .data(year_opts)
     .enter()

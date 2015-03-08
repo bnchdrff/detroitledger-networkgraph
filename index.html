@@ -73,6 +73,12 @@ text {
   opacity: .1;
   z-index: 10;
 }
+
+.node.org,
+text.org {
+  opacity: 1 !important;
+}
+
 .link {
   stroke: #808080;
 }
@@ -114,13 +120,15 @@ text.active {
         * click on a node to see its neighbors
       </div>
       <div id="filters">
+      loading year filters...
       </div>
       <div id="labels">
+      click on a network node &amp; hover over its links to see what they mean!
       </div>
     </div>
 
   </div> <!--main-->
 <script src="main.js"></script>
-<script src="https://data.detroitledger.org/api/1.0/orgs.jsonp?filters[has_boardmembers]=true&callback=got_orgs"></script>
+<script src="https://data.detroitledger.org/api/1.0/orgs.jsonp?filters[has_boardmembers]=true&amp;callback=got_orgs"></script>
   </body>
 </html>
