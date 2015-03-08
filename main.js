@@ -577,7 +577,7 @@ function build_year_filter_widget(container_selector, year_opts) {
 function filter_graph_by_year(year, visibility) {
   d3.selectAll('.link')
     .style('visibility', function(d, i) {
-      d.visibility = (d.startyear == year ? visibility : $(this).css('visibility'));
+      d.visibility = (d.startyear == year ? visibility : this.style.visibility);
       // hide corresponding text label
       if (d.visibility == 'hidden') {
         d3.selectAll('text').filter(function(d_text) {
