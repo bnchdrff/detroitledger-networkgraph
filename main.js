@@ -444,9 +444,11 @@ function toggle_node(node_to_toggle, index, context) {
  *
  * @param center_node_id
  * @param neighbors
+ * @param should_zoom
+ *   true if we should zoom to extant
  * @return null
  */
-function highlight_neighbor_nodes(center_node_id, neighbors) {
+function highlight_neighbor_nodes(center_node_id, neighbors, should_zoom) {
   var extant = {
     x:[],
     y:[]
@@ -472,9 +474,11 @@ function highlight_neighbor_nodes(center_node_id, neighbors) {
       scale = .76 / Math.max(dx / width, dy / height), // .76 is nice @todo include labels in extant?
       translate = [width / 2 - scale * x, height / 2 - scale * y];
 
-  svg.transition()
-      .duration(750)
-      .call(zoom.translate(translate).scale(scale).event);
+  if (should_zoom) {
+    svg.transition()
+       .duration(750)
+       .call(zoom.translate(translate).scale(scale).event);
+  }
 
   d3.selectAll('text').classed('active', function (d) {
     if (d.hasOwnProperty('source') || d.hasOwnProperty('target')) {
