@@ -110,7 +110,6 @@ text.active {
 
   </div> <!--main-->
 <script src="main.js"></script>
-<script src="https://data.detroitledger.org/api/1.0/orgs/111/board_members.jsonp?callback=cfsem_done"></script>
-<script src="https://data.detroitledger.org/api/1.0/orgs/157/board_members.jsonp?callback=dia_done"></script>
+<script src="https://data.detroitledger.org/api/1.0/orgs.jsonp?filters[has_boardmembers]=true&callback=got_orgs"></script>
   </body>
 </html>

@@ -1,92 +1,107 @@
-// Get JSONP
-var create_cb_promise = function(cb_name) {
-  var promise = new RSVP.Promise(function(resolve, reject) {
-    window[cb_name] = function(data) {
-      resolve(data);
-    };
-  });
-  return promise;
-};
+function got_orgs(data) {
+  var promises = {};
+  window.orgs = {};
 
-var promises = {
-  cfsem: create_cb_promise('cfsem_done'),
-  dia: create_cb_promise('dia_done')
-};
+  var create_cb_promise = function(cb_name) {
+    var promise = new RSVP.Promise(function(resolve, reject) {
+      window[cb_name] = function(data) {
+        resolve(data);
+      };
+    });
+    return promise;
+  };
 
-RSVP.hash(promises)
-  .then(draw_charts)
-  .catch(function(reason) {
-    debugger;
+  var add_jsonp_script = function(org_id, cb_name) {
+    var s = document.createElement('script');
+    s.setAttribute('src', 'https://data.detroitledger.org/api/1.0/orgs/' + org_id + '/board_members.jsonp?callback=' + cb_name);
+    document.body.appendChild(s);
+  };
+
+  // create promise callback for each org in the form of "org_123"
+  // & also fill our local orgs info hash, for later reference
+  data.orgs.forEach(function(org) {
+    var cb = 'org_' + org.id;
+    promises[cb] = create_cb_promise(cb);
+    window.orgs[cb] = org;
   });
+
+  // establish promises
+  RSVP.hash(promises)
+    .then(draw_charts)
+    .catch(function(reason) {
+      debugger;
+    });
+  // and then add scripts
+  _.forEach(data.orgs, function(org) {
+    add_jsonp_script(org.id, 'org_' + org.id);
+  });
+}
 
 function draw_charts (data) {
-  var people = [];
-  var people_ids = _.uniq(_.pluck(data.cfsem.board_members, "person_id"));
-  _.forEach(people_ids, function (person_id) {
-    var boardmember = _.findWhere(data.cfsem.board_members, {person_id: person_id.toString()});
-    var name = boardmember.name;
-    var person = {
-      id: parseInt(person_id),
-      name: name,
-      t: "person"
-    };
-    people.push(person);
-  });
-  var people_ids = _.uniq(_.pluck(data.dia.board_members, "person_id"));
-  _.forEach(people_ids, function (person_id) {
-    var boardmember = _.findWhere(data.dia.board_members, {person_id: person_id.toString()});
-    var name = boardmember.name;
-    var person = {
-      id: parseInt(person_id),
-      name: name,
-      t: "person"
-    };
-    people.push(person);
-  });
+  var all_people = [];
+  var all_orgs = [];
+  var all_board_terms = [];
 
-  var organizations = [
-    {
-      id: 111,
-      name: "Community Foundation",
-      t: "Organization"
-    },
-    {
-      id: 157,
-      name: "Detroit Institute of Arts",
-      t: "Organization"
-    }
-  ];
+  var get_people_from_org_board_members = function(board_members) {
+    var people = [];
 
-  var board_terms = [];
-  _.forEach(data.cfsem.board_members, function (board_membership) {
-    board_terms.push({
-      source: 111,
-      target: parseInt(board_membership.person_id),
-      label: board_membership.position,
-      amount: board_membership.compensation,
-      startyear: board_membership.term_start.substr(0,4),
-      endyear: board_membership.term_end.substr(0,4)
+    var people_ids = _.uniq(_.pluck(board_members, "person_id"));
+
+    _.forEach(people_ids, function (person_id) {
+      var boardmember = _.findWhere(board_members, {person_id: person_id.toString()});
+      var name = boardmember.name;
+      var person = {
+        id: parseInt(person_id),
+        name: name,
+        t: "person"
+      };
+      people.push(person);
     });
+
+    return people;
+  };
+
+  var get_board_terms_from_org_board_members = function(board_members, org_id) {
+    var board_terms = [];
+
+    _.forEach(board_members, function (board_membership) {
+      board_terms.push({
+        source: org_id,
+        target: parseInt(board_membership.person_id),
+        label: board_membership.position,
+        amount: board_membership.compensation,
+        startyear: board_membership.term_start.substr(0,4),
+        endyear: board_membership.term_end.substr(0,4)
+      });
+    });
+
+    return board_terms;
+  };
+
+  _.forEach(data, function(datum, key) {
+    var org_id = parseInt(key.substr(4));
+
+    all_people = all_people.concat(get_people_from_org_board_members(datum.board_members));
+    all_board_terms = all_board_terms.concat(get_board_terms_from_org_board_members(datum.board_members, org_id));
   });
-  _.forEach(data.dia.board_members, function (board_membership) {
-    board_terms.push({
-      source: 157,
-      target: parseInt(board_membership.person_id),
-      label: board_membership.position,
-      amount: board_membership.compensation,
-      startyear: board_membership.term_start.substr(0,4),
-      endyear: board_membership.term_end.substr(0,4)
+
+
+  _.forEach(window.orgs, function(org) {
+    all_orgs.push({
+      id: org.id,
+      name: org.title,
+      t: 'Organization'
     });
   });
 
   window.data = {
-    nodes: people.concat(organizations),
-    links: board_terms,
+    nodes: all_people.concat(all_orgs),
+    links: all_board_terms,
     mLinkNum: {},
   };
 
   var nodeIds = _.pluck(window.data.nodes, 'id');
-  window.data.links.forEach(function (l) {
+  _.forEach(window.data.links, function (l) {
     l.source = nodeIds.indexOf(l.source);
     l.target = nodeIds.indexOf(l.target);
   });
