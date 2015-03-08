@@ -53,7 +53,7 @@ function draw_charts (data) {
       var person = {
         id: parseInt(person_id),
         name: name,
-        t: "person"
+        t: "Person"
       };
       people.push(person);
     });
@@ -200,7 +200,7 @@ function doEverything(data) {
               colorLink = "green";
             }
             else {
-              colorLink = "black";
+              colorLink = "gray";
             }
             d.stroke = colorLink;
             return colorLink;
@@ -226,7 +226,7 @@ function doEverything(data) {
               colorLink = "green";
             }
             else {
-              colorLink = "black";
+              colorLink = "gray";
             }
             this.style.strokeWidth = '1px';
             d.stroke = colorLink;
@@ -243,7 +243,14 @@ function doEverything(data) {
   node.enter().append("g")
       .append("path")
       .attr("class", "node")
-      .attr("d",  d3.svg.symbol().size(120)
+      .attr("d",  d3.svg.symbol()
+        .size(function(d) {
+          if (d.t == 'Person') {
+            return 200 * d.neighbors.length;
+          } else {
+            return 600;
+          }
+        })
         .type(function (d) {
           var typeStr;
           switch (d.t) {
