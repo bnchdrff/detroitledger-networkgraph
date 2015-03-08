@@ -214,8 +214,7 @@ function doEverything(data) {
             document.getElementById("labels").innerHTML = d.source.name + " <br />"
               + " is linked to <br />" 
               + d.target.name + " <br />"
-              + "Relationship: " + d.label + " <br />"
-              + "Citation: " + d.citation;
+              + "Relationship: " + d.label + " <br />";
           }
         })
 
