@@ -48,6 +48,7 @@ text {
   height: auto;
 }
 
+#what,
 #filters,
 #labels {
   border: 1px solid black;
@@ -55,6 +56,10 @@ text {
   margin: 10px;
   padding: 10px;
   word-wrap: break-word;
+}
+
+#what {
+  font-size: smaller;
 }
 
 #graph {
@@ -102,6 +107,15 @@ text.active {
     </div>
 
     <div class="widgets">
+      <div id="what">
+        this is a sample network graph depicting some recently collected board membership data of a few organizations in the <a href="https://www.detroitledger.org">Detroit Ledger</a> database.
+        <hr>
+        * use mouse zoom to zoom in/out
+        <br>
+        * click+drag to pan around
+        <br>
+        * click on a node to see its neighbors
+      </div>
       <div id="filters">
       </div>
       <div id="labels">
